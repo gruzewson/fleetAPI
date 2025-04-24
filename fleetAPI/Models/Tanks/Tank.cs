@@ -1,32 +1,42 @@
+using FleetAPI.Exceptions;
+
 namespace FleetAPI.Models.Tanks
 {
     public class Tank
     {
-        public int Capacity { get; set; }
-        public int CurrentLitersNumber { get; set; }
+        public double Capacity { get; set; }
+        public double CurrentLitersNumber { get; set; }
         public FuelType FuelType { get; set; }
-        public  int TankID { get; set; }
-    }
+        public Guid TankID { get; set; }
 
-    public void FillTank(int liters, FuelType fuelType)
-    {
-        var tank = Tanks.FirstOrDefault(t => t.FuelType == fuelType);
-        if (tank != null)
+        public Tank(FuelType fuelType, double capacity)
         {
-            if (tank.CurrentLitersNumber + liters <= tank.Capacity)
-            {
-                tank.CurrentLitersNumber += liters;
-                Console.WriteLine($"Tank {tank.TankID} filled with {liters} liters.");
-            }
-            else
-            {
-                Console.WriteLine("Cannot fill tank. Exceeds capacity.");
-            }
+            if (capacity <= 0)
+                throw new InvalidTankCapacityException();
+
+            TankID = Guid.NewGuid();
+            FuelType = fuelType;
+            Capacity = capacity;
+            CurrentLitersNumber = 0;
         }
-        else
+
+        public void FillTank(int liters)
         {
-            //exception
-            Console.WriteLine("Tank not found.");
+            if (liters <= 0)
+                throw new InvalidTankFillAmountException("Liters to fill must be greater than zero.");
+
+            if (CurrentLitersNumber + liters > Capacity)
+                throw new TankOverfillException(TankID, liters, Capacity);
+
+            CurrentLitersNumber += liters;
+        }
+
+        public void FullyEmptyTank()
+        {
+            if (CurrentLitersNumber == 0)
+                throw new TankAlreadyEmptyException(TankID);
+
+            CurrentLitersNumber = 0;
         }
     }
 }

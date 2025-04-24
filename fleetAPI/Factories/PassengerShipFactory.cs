@@ -1,10 +1,12 @@
-using FleetAPI.Models;
+using FleetAPI.Models.Ships;
+using FleetAPI.Models.Passengers;
+using FleetAPI.Models.Tanks;
 
 namespace FleetAPI.Factories
 {
     public class PassengerShipFactory : IShipFactory<PassengerShip>
     {
-        public PassengerShip Create(int imo, string name, float length, float width,
+        public PassengerShip Create(string imo, string name, double length, double width,
                                     IEnumerable<Passenger>? passengers = null,
                                     IEnumerable<Tank>?      tanks = null)
         {

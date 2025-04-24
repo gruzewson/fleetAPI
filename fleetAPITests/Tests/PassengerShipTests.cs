@@ -11,9 +11,40 @@ namespace FleetAPI.Tests
 
         public PassengerShipTests()
         {
-            // Initialize the factory once for all tests
             _factory = new PassengerShipFactory();
+            _correctShip = _factory.Create(
+                imo: "IMO9074729",
+                name: "Test Ship",
+                length: 300.0,
+                width: 50.0,
+                passengers: new List<Passenger>()
+            );
+            _correctShip.AddPassenger("John", "Doe"); //passengers[0]
         }
+
+        // add passenger should work
+        [Fact]
+        public void AddPassenger_ShouldAddPassenger_WhenValidData()
+        {
+            // Act
+            ship.AddPassenger("Andrew", "Wandrew");
+
+            // Assert
+            var passenger = Assert.Single(_correctShip.Passengers);
+            Assert.Equal("Andrew", passenger.Name);
+            Assert.Equal("Wandrew", passenger.Surname);
+        }
+
+
+
+
+
+
+
+
+
+
+
 
         [Fact]
         public void AddPassenger_ShouldAddPassenger_WhenCapacityNotExceeded()
@@ -130,3 +161,13 @@ namespace FleetAPI.Tests
         }
     }
 }
+
+// add passenger should work
+//add passenger wrong name, wrong surname
+// update passenger should work
+// update passenger wrong name, wrong surname
+// update passenger not found
+// remove passenger should work
+// remove passenger not found
+// get passenger by id should work
+// get passenger by id not found

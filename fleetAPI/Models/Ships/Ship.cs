@@ -1,3 +1,5 @@
+using FleetAPI.Exceptions;
+
 namespace FleetAPI.Models.Ships
 {
     
@@ -5,13 +7,13 @@ namespace FleetAPI.Models.Ships
     {
         public string ImoNumber { get; set; }
         public string ShipName { get; set; }
-        public float Length { get; set; }
-        public float Width { get; set; }
+        public double Length { get; set; }
+        public double Width { get; set; }
         public ShipType ShipType { get; set; }
         private const int MINIMAL_LENGTH = 1;
         private const int MINIMAL_WIDTH = 1;
 
-        protected Ship(string imo, string name, float length, float width, ShipType shipType)
+        protected Ship(string imo, string name, double length, double width, ShipType shipType)
         {
             validateImoNumber(imo);
             validateShipName(name);
@@ -66,16 +68,35 @@ namespace FleetAPI.Models.Ships
                 throw new InvalidShipNameException();
         }
 
-        private void validateLength(float length)
+        private void validateLength(double length)
         {
             if (length <= MINIMAL_LENGTH)
                 throw new InvalidShipLengthException($"Length must be greater than {MINIMAL_LENGTH}.");
         }
 
-        private void validateWidth(float width)
+        private void validateWidth(double width)
         {
             if (width <= MINIMAL_WIDTH)
                 throw new InvalidShipWidthException($"Width must be greater than {MINIMAL_WIDTH}.");
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is Ship other)
+            {
+                return ImoNumber == other.ImoNumber;
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return ImoNumber.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return $"{ShipName} (IMO: {ImoNumber}, Length: {Length}, Width: {Width}, Type: {ShipType})";
         }
 
     }

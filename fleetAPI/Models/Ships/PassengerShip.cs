@@ -1,4 +1,5 @@
 using FleetAPI.Models.Passengers;
+using FleetAPI.Exceptions;
 
 namespace FleetAPI.Models.Ships
 {
@@ -8,8 +9,8 @@ namespace FleetAPI.Models.Ships
         public List<Passenger> Passengers { get; set; }
         public int CurrentPassengerID { get; set; } = 0;
 
-        public PassengerShip(string imo, string name, float length,
-            float width, IEnumerable<Passenger> passengers)
+        public PassengerShip(string imo, string name, double length,
+            double width, IEnumerable<Passenger> passengers)
             : base(imo, name, length, width, ShipType.Passenger)
         {
             Passengers = passengers.Select(p => new Passenger
@@ -71,6 +72,14 @@ namespace FleetAPI.Models.Ships
                             ?? throw new PassengerNotFoundException(passengerId);
 
             return passenger;
+        }
+
+        public override string ToString()
+        {
+            //list all passengers
+            string passengerList = string.Join(", ", Passengers.Select(p => $"{p.Name} {p.Surname}"));
+            return $"Passenger Ship: {ShipName} (IMO: {ImoNumber}), Length: {Length}, Width: {Width}, " +
+                   $"Passenger Count: {PassengerCount}, Passengers: [{passengerList}]";
         }
     }
 }

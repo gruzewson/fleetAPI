@@ -1,4 +1,7 @@
-namespace FleetAPI.Models.Ships;
+using FleetAPI.Models.Passengers;
+using FleetAPI.Models.Tanks;
+
+namespace FleetAPI.Models.Ships
 {
     public class ShipDto
     {
