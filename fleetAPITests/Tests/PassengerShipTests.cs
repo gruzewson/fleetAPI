@@ -1,173 +1,137 @@
-using FleetAPI.Models;
-using FleetAPI.Factories;
-using Xunit;
 using System.Collections.Generic;
+using System.Linq;
+using Xunit;
+using FleetAPI.Models.Ships;
+using FleetAPI.Factories;
+using FleetAPI.Models.Passengers;
+using FleetAPI.Exceptions;
 
 namespace FleetAPI.Tests
 {
     public class PassengerShipTests
     {
-        private readonly IShipFactory<PassengerShip> _factory;
+        private readonly PassengerShip _correctShip;
 
         public PassengerShipTests()
         {
-            _factory = new PassengerShipFactory();
-            _correctShip = _factory.Create(
+            var factory = new PassengerShipFactory();
+            _correctShip = factory.Create(
                 imo: "IMO9074729",
                 name: "Test Ship",
-                length: 300.0,
-                width: 50.0,
-                passengers: new List<Passenger>()
+                length: 300f,
+                width: 50f,
+                passengers: Enumerable.Empty<Passenger>()
             );
-            _correctShip.AddPassenger("John", "Doe"); //passengers[0]
         }
 
-        // add passenger should work
         [Fact]
         public void AddPassenger_ShouldAddPassenger_WhenValidData()
         {
             // Act
-            ship.AddPassenger("Andrew", "Wandrew");
+            _correctShip.AddPassenger("Andrew", "Wandrew");
 
             // Assert
             var passenger = Assert.Single(_correctShip.Passengers);
             Assert.Equal("Andrew", passenger.Name);
             Assert.Equal("Wandrew", passenger.Surname);
+            Assert.Equal(1, _correctShip.PassengerCount);
+            Assert.Equal(1, passenger.PassengerID);
         }
 
-
-
-
-
-
-
-
-
-
-
+        [Theory]
+        [InlineData("", "", "Name is required.")]
+        [InlineData("Andrew", "", "Surname is required.")]
+        [InlineData("", "Wandrew", "Name is required.")]
+        public void AddPassenger_ShouldThrowException_WhenInvalidData(string name, string surname, string expectedMessage)
+        {
+            // Act & Assert
+            var ex = Assert.Throws<InvalidPassengerDataException>(() =>
+                _correctShip.AddPassenger(name, surname));
+            Assert.Equal(expectedMessage, ex.Message);
+        }
 
         [Fact]
-        public void AddPassenger_ShouldAddPassenger_WhenCapacityNotExceeded()
+        public void UpdatePassengerInfo_ShouldUpdatePassenger_WhenValidData()
         {
-            // Arrange: create an empty ship and set capacity
-            var ship = _factory.Create(
-                imo: 1234567,
-                name: "Test Ship",
-                length: 300f,
-                width: 50f,
-                passengers: new List<Passenger>()
-            );
-            ship.MaxPassengers = 2;
-            ship.CurrentPassengers = 0;
-            ship.CurrentPassengerID = 0;
+            // Arrange
+            _correctShip.AddPassenger("Andrew", "Wandrew");
+            var passenger = _correctShip.Passengers.First();
 
             // Act
-            ship.AddPassenger("John", "Doe");
+            _correctShip.UpdatePassengerInfo(passenger.PassengerID, "NewName", "NewSurname");
 
             // Assert
-            Assert.Single(ship.Passengers);
-            Assert.Equal("John", ship.Passengers[0].Name);
-            Assert.Equal("Doe", ship.Passengers[0].Surname);
+            Assert.Equal("NewName", passenger.Name);
+            Assert.Equal("NewSurname", passenger.Surname);
+        }
+
+        [Theory]
+        [InlineData("", "", "Name is required.")]
+        [InlineData("Andrew", "", "Surname is required.")]
+        [InlineData("", "Wandrew", "Name is required.")]
+        public void UpdatePassengerInfo_ShouldThrowException_WhenInvalidData(string newName, string newSurname, string expectedMessage)
+        {
+            // Arrange
+            _correctShip.AddPassenger("Andrew", "Wandrew");
+            var passenger = _correctShip.Passengers.First();
+
+            // Act & Assert
+            var ex = Assert.Throws<InvalidPassengerDataException>(() =>
+                _correctShip.UpdatePassengerInfo(passenger.PassengerID, newName, newSurname));
+            Assert.Equal(expectedMessage, ex.Message);
         }
 
         [Fact]
-        public void AddPassenger_ShouldNotAddPassenger_WhenCapacityExceeded()
+        public void UpdatePassengerInfo_ShouldThrowException_WhenPassengerNotFound()
         {
-            // Arrange: create a ship at full capacity
-            var ship = _factory.Create(
-                imo: 1234567,
-                name: "Test Ship",
-                length: 300f,
-                width: 50f,
-                passengers: new List<Passenger> { new Passenger(1, "Alice", "Doe"), new Passenger(2, "Bob", "Smith") }
-            );
-            // MaxPassengers and CurrentPassengers initialized by ctor from initial list
-
-            // Act
-            ship.AddPassenger("Charlie", "Brown");
-
-            // Assert: no new passenger added
-            Assert.Equal(2, ship.Passengers.Count);
-            Assert.DoesNotContain(ship.Passengers, p => p.Name == "Charlie" && p.Surname == "Brown");
+            var ex = Assert.Throws<PassengerNotFoundException>(() =>
+                _correctShip.UpdatePassengerInfo(999, "NewName", "NewSurname"));
+            Assert.Equal("Passenger with ID 999 not found.", ex.Message);
         }
 
         [Fact]
-        public void RemovePassengerById_ShouldRemovePassenger_WhenPassengerExists()
+        public void RemovePassengerById_ShouldRemovePassenger_WhenValidId()
         {
-            // Arrange: create ship with one passenger
-            var ship = _factory.Create(
-                imo: 1234567,
-                name: "Test Ship",
-                length: 300f,
-                width: 50f,
-                passengers: new List<Passenger> { new Passenger(1, "John", "Doe") }
-            );
+            // Arrange
+            _correctShip.AddPassenger("Andrew", "Wandrew");
+            var passenger = _correctShip.Passengers.First();
 
             // Act
-            ship.RemovePassengerById(1);
+            _correctShip.RemovePassengerById(passenger.PassengerID);
 
             // Assert
-            Assert.Empty(ship.Passengers);
+            Assert.Empty(_correctShip.Passengers);
+            Assert.Equal(0, _correctShip.PassengerCount);
         }
 
         [Fact]
-        public void UpdatePassenger_ShouldUpdatePassenger_WhenPassengerExists()
+        public void RemovePassengerById_ShouldThrowException_WhenPassengerNotFound()
         {
-            // Arrange: create ship and add one passenger
-            var ship = _factory.Create(
-                imo: 1234567,
-                name: "Test Ship",
-                length: 300f,
-                width: 50f,
-                passengers: new List<Passenger>()
-            );
-            ship.MaxPassengers = 1;
-            ship.CurrentPassengers = 0;
-            ship.CurrentPassengerID = 0;
-            ship.AddPassenger("John", "Doe");
-
-            // Act
-            ship.UpdatePassenger(1, "Jane", "Smith");
-
-            // Assert
-            Assert.Single(ship.Passengers);
-            Assert.Equal("Jane", ship.Passengers[0].Name);
-            Assert.Equal("Smith", ship.Passengers[0].Surname);
+            var ex = Assert.Throws<PassengerNotFoundException>(() =>
+                _correctShip.RemovePassengerById(999));
+            Assert.Equal("Passenger with ID 999 not found.", ex.Message);
         }
 
         [Fact]
-        public void GetPassengerById_ShouldReturnPassenger_WhenPassengerExists()
+        public void GetPassengerById_ShouldReturnPassenger_WhenValidId()
         {
-            // Arrange: create ship and add one passenger
-            var ship = _factory.Create(
-                imo: 1234567,
-                name: "Test Ship",
-                length: 300f,
-                width: 50f,
-                passengers: new List<Passenger>()
-            );
-            ship.MaxPassengers = 1;
-            ship.CurrentPassengers = 0;
-            ship.CurrentPassengerID = 0;
-            ship.AddPassenger("John", "Doe");
+            // Arrange
+            _correctShip.AddPassenger("Andrew", "Wandrew");
+            var passenger = _correctShip.Passengers.First();
 
             // Act
-            var passenger = ship.GetPassengerById(1);
+            var result = _correctShip.GetPassengerById(passenger.PassengerID);
 
             // Assert
-            Assert.NotNull(passenger);
-            Assert.Equal("John", passenger.Name);
-            Assert.Equal("Doe", passenger.Surname);
+            Assert.Equal(passenger, result);
+        }
+
+        [Fact]
+        public void GetPassengerById_ShouldThrowException_WhenPassengerNotFound()
+        {
+            var ex = Assert.Throws<PassengerNotFoundException>(() =>
+                _correctShip.GetPassengerById(999));
+            Assert.Equal("Passenger with ID 999 not found.", ex.Message);
         }
     }
 }
-
-// add passenger should work
-//add passenger wrong name, wrong surname
-// update passenger should work
-// update passenger wrong name, wrong surname
-// update passenger not found
-// remove passenger should work
-// remove passenger not found
-// get passenger by id should work
-// get passenger by id not found
