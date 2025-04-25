@@ -8,7 +8,7 @@ using Microsoft.Extensions.Hosting;
 var builder = WebApplication.CreateBuilder(args);
 
 // 1) Dependency Injection
-builder.Services.AddSingleton<IShipRepository, ShipRepository>();
+builder.Services.AddSingleton<IShipRegister, ShipRegister>();
 builder.Services.AddScoped<IShipFactory<PassengerShip>, PassengerShipFactory>();
 builder.Services.AddScoped<IShipFactory<TankerShip>,   TankerShipFactory>();
 

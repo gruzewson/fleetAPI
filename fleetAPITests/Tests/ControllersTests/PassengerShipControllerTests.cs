@@ -108,7 +108,8 @@ namespace FleetAPI.Tests.Controllers
             });
             _repoMock.Setup(r => r.GetPassengerShipByImo(imo)).Returns(ship);
 
-            var result = _ctrl.UpdatePassengerInfo(imo, 1, "Janek", "Smith");
+            var passengerDto = new PassengerDto("Janek", "Smith");
+            var result = _ctrl.UpdatePassengerInfo(imo, 1, passengerDto);
 
             Assert.IsType<NoContentResult>(result);
             Assert.Single(ship.Passengers);
@@ -122,7 +123,8 @@ namespace FleetAPI.Tests.Controllers
             string imo = "IMO9074729";
             _repoMock.Setup(r => r.GetPassengerShipByImo(imo)).Returns((PassengerShip)null);
 
-            var result = _ctrl.UpdatePassengerInfo(imo, 1, "Janek", "Smith");
+            var passengerDto = new PassengerDto("Janek", "Smith");
+            var result = _ctrl.UpdatePassengerInfo(imo, 1, passengerDto);
 
             Assert.IsType<NotFoundResult>(result);
         }
@@ -139,7 +141,8 @@ namespace FleetAPI.Tests.Controllers
             });
             _repoMock.Setup(r => r.GetPassengerShipByImo(imo)).Returns(ship);
 
-            var result = _ctrl.UpdatePassengerInfo(imo, 1, name, surname);
+            var passengerDto = new PassengerDto(name, surname);
+            var result = _ctrl.UpdatePassengerInfo(imo, 1, passengerDto);
 
             Assert.IsType<BadRequestObjectResult>(result);
             var badRequestResult = (BadRequestObjectResult)result;
@@ -153,7 +156,8 @@ namespace FleetAPI.Tests.Controllers
             var ship = new PassengerShip(imo, "Test Ship", 100.0, 50.0, new List<Passenger>());
             _repoMock.Setup(r => r.GetPassengerShipByImo(imo)).Returns(ship);
 
-            var result = _ctrl.UpdatePassengerInfo(imo, 1, "Janek", "Smith");
+            var passengerDto = new PassengerDto("Janek", "Smith");
+            var result = _ctrl.UpdatePassengerInfo(imo, 1, passengerDto);
 
             var notFound = Assert.IsType<NotFoundObjectResult>(result);
             Assert.Equal("Passenger with ID 1 not found.", notFound.Value);

@@ -26,7 +26,7 @@ namespace FleetAPI.Tests.ShipsTests
                     new Tank(FuelType.HeavyFuel, 100.0)
                 }
             );
-            _correctShip.FillTank(_correctShip.Tanks.First().TankID, 10);
+            _correctShip.FillTank(_correctShip.Tanks.First().TankId, 10);
         }
         
 
@@ -39,7 +39,7 @@ namespace FleetAPI.Tests.ShipsTests
             var litersToFill = 50;
 
             // Act
-            _correctShip.FillTank(tank.TankID, litersToFill);
+            _correctShip.FillTank(tank.TankId, litersToFill);
 
             // Assert
             Assert.Equal(initialLiters + litersToFill, tank.CurrentLitersNumber);

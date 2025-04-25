@@ -15,7 +15,7 @@ namespace FleetAPI.Factories
                 name, 
                 length, 
                 width, 
-                passengers ?? Enumerable.Empty<Passenger>());
+                passengers ?? []);
         }
     }
 }

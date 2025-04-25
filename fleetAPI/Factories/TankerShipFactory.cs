@@ -15,7 +15,7 @@ namespace FleetAPI.Factories
                 name:   name,
                 length: length,
                 width:  width,
-                tanks:  tanks ?? Array.Empty<Tank>()
+                tanks:  tanks
             );
         }
     }

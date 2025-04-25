@@ -9,7 +9,7 @@ public class InvalidPassengerDataException : Exception
 
 public class PassengerNotFoundException : Exception
 {
-    public PassengerNotFoundException(int id)
+    public PassengerNotFoundException(Guid id)
         : base($"Passenger with ID {id} not found.") { }
 }
 

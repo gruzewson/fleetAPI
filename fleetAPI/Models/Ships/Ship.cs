@@ -15,10 +15,10 @@ namespace FleetAPI.Models.Ships
 
         protected Ship(string imo, string name, double length, double width, ShipType shipType)
         {
-            validateImoNumber(imo);
-            validateShipName(name);
-            validateLength(length);
-            validateWidth(width);
+            ValidateImoNumber(imo);
+            ValidateShipName(name);
+            ValidateLength(length);
+            ValidateWidth(width);
             
             ImoNumber = imo;
             ShipName = name;
@@ -27,7 +27,7 @@ namespace FleetAPI.Models.Ships
             ShipType = shipType;
         }
 
-        private void validateImoNumber(string imo)
+        private void ValidateImoNumber(string imo)
         {
             if (imo is null)
                 throw new InvalidImoNumberException("IMO number must not be null.");
@@ -47,7 +47,7 @@ namespace FleetAPI.Models.Ships
 
             // Compute the checksum on the first six digits
             int sum = 0;
-            int weight = 7;  // weights 7→2
+            int weight = 7;
             for (int i = 0; i < 6; i++)
             {
                 sum += (digits[i] - '0') * weight;
@@ -62,19 +62,19 @@ namespace FleetAPI.Models.Ships
                     $"Invalid IMO checksum: expected {expectedCheck}, but found {actualCheck}.");
         }
 
-        private void validateShipName(string name)
+        private void ValidateShipName(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
                 throw new InvalidShipNameException();
         }
 
-        private void validateLength(double length)
+        private void ValidateLength(double length)
         {
             if (length <= MINIMAL_LENGTH)
                 throw new InvalidShipLengthException($"Length must be greater than {MINIMAL_LENGTH}.");
         }
 
-        private void validateWidth(double width)
+        private void ValidateWidth(double width)
         {
             if (width <= MINIMAL_WIDTH)
                 throw new InvalidShipWidthException($"Width must be greater than {MINIMAL_WIDTH}.");
@@ -93,11 +93,5 @@ namespace FleetAPI.Models.Ships
         {
             return ImoNumber.GetHashCode();
         }
-
-        public override string ToString()
-        {
-            return $"{ShipName} (IMO: {ImoNumber}, Length: {Length}, Width: {Width}, Type: {ShipType})";
-        }
-
     }
 }

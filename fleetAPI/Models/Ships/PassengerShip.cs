@@ -5,9 +5,8 @@ namespace FleetAPI.Models.Ships
 {
     public class PassengerShip : Ship
     {
-        public int PassengerCount { get; set; }
-        public List<Passenger> Passengers { get; set; }
-        public int CurrentPassengerID { get; set; } = 0;
+        private int PassengerCount { get; set; }
+        private List<Passenger> Passengers { get; set; }
 
         public PassengerShip(string imo, string name, double length,
             double width, IEnumerable<Passenger> passengers)
@@ -20,7 +19,7 @@ namespace FleetAPI.Models.Ships
             )).ToList();
             foreach (var passenger in Passengers)
             {
-                passenger.PassengerID = ++CurrentPassengerID;
+                passenger.PassengerId = Guid.NewGuid();
             }
 
             PassengerCount = Passengers.Count;
@@ -38,16 +37,15 @@ namespace FleetAPI.Models.Ships
                 name,
                 surname
             );
-            passenger.PassengerID = ++CurrentPassengerID;
+            passenger.PassengerId = Guid.NewGuid();
 
             Passengers.Add(passenger);
             PassengerCount++;
-            CurrentPassengerID++;
         }
 
-        public void UpdatePassengerInfo(int passengerId, string newName, string newSurname)
+        public void UpdatePassengerInfo(Guid passengerId, string newName, string newSurname)
         {
-            var passenger = Passengers.FirstOrDefault(p => p.PassengerID == passengerId)
+            var passenger = Passengers.FirstOrDefault(p => p.PassengerId == passengerId)
                     ?? throw new PassengerNotFoundException(passengerId);
 
             if (string.IsNullOrWhiteSpace(newName))
@@ -59,30 +57,27 @@ namespace FleetAPI.Models.Ships
             passenger.Surname = newSurname;
         }
         
-        public void RemovePassengerById(int passengerId) //TODO valid id
+        public void RemovePassengerById(Guid passengerId)
         {
-            var passenger = Passengers.FirstOrDefault(p => p.PassengerID == passengerId)
+            var passenger = Passengers.FirstOrDefault(p => p.PassengerId == passengerId)
                             ?? throw new PassengerNotFoundException(passengerId);
             
             Passengers.Remove(passenger);
             PassengerCount--;
         }
         
-        public Passenger GetPassengerById(int passengerId)
+        public Passenger GetPassengerById(Guid passengerId)
         {
             var passenger = Passengers
-            .FirstOrDefault(p => p.PassengerID == passengerId)
+            .FirstOrDefault(p => p.PassengerId == passengerId)
                             ?? throw new PassengerNotFoundException(passengerId);
 
             return passenger;
         }
-
-        public override string ToString()
+        
+        public IEnumerable<Passenger> GetAllPassengers()
         {
-            //list all passengers
-            string passengerList = string.Join(", ", Passengers.Select(p => $"{p.Name} {p.Surname}"));
-            return $"Passenger Ship: {ShipName} (IMO: {ImoNumber}), Length: {Length}, Width: {Width}, " +
-                   $"Passenger Count: {PassengerCount}, Passengers: [{passengerList}]";
+            return Passengers;
         }
     }
 }

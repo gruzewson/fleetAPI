@@ -3,7 +3,7 @@ using FleetAPI.Models.Ships;
 
 namespace FleetAPI.Data
 {
-    public interface IShipRepository
+    public interface IShipRegister
     {
         void AddShip(Ship ship);
         Ship RemoveShip(string imo);

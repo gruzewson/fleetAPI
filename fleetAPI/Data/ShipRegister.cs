@@ -6,16 +6,16 @@ using FleetAPI.Models.Ships;
 
 namespace FleetAPI.Data
 {
-    public class ShipRepository : IShipRepository
+    public class ShipRegister : IShipRegister
     {
-        private readonly HashSet<Ship> _ships = new();
+        private readonly HashSet<Ship> _ships = [];
 
         public void AddShip(Ship ship)
         {
-            if (ship == null)
-                throw new ArgumentNullException(nameof(ship));
-
-            if (!_ships.Add(ship)) // HashSet.Add returns false if the item already exists
+            ArgumentNullException.ThrowIfNull(ship);
+            
+            // HashSet.Add returns false if the item already exists
+            if (!_ships.Add(ship)) 
                 throw new ShipAlreadyExistsException(ship.ImoNumber);
         }
 
@@ -34,7 +34,7 @@ namespace FleetAPI.Data
                    ?? throw new ShipNotFoundException(imo);
         }
 
-        public PassengerShip? GetPassengerShipByImo(string imo) //TODO test
+        public PassengerShip? GetPassengerShipByImo(string imo)
             => _ships
                 .OfType<PassengerShip>()                   
                 .FirstOrDefault(s => s.ImoNumber == imo);  

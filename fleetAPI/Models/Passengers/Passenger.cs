@@ -2,7 +2,7 @@ namespace FleetAPI.Models.Passengers
 {
     public class Passenger
     {
-        public int PassengerID { get; set; }
+        public Guid PassengerId { get; set; }
         public string Name { get; set; }
         public string Surname { get; set; }
         
