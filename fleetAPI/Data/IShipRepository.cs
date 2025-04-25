@@ -1,13 +1,17 @@
 using System.Collections.Generic;
 using FleetAPI.Models.Ships;
 
-namespace FleetAPI.Repositories
+namespace FleetAPI.Data
 {
     public interface IShipRepository
     {
         void AddShip(Ship ship);
-        void RemoveShip(string imo);
+        Ship RemoveShip(string imo);
         Ship GetShipByImo(string imo);
+
+        PassengerShip? GetPassengerShipByImo(string imo);
+        TankerShip?   GetTankerShipByImo(string imo);
+        bool Exists(string imo);
         IEnumerable<Ship> GetAllShips();
         IEnumerable<Ship> GetShipsByType(ShipType type);
     }

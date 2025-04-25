@@ -6,9 +6,8 @@ namespace FleetAPI.Models.Passengers
         public string Name { get; set; }
         public string Surname { get; set; }
         
-        public Passenger(int passengerID, string name, string surname)
+        public Passenger(string name, string surname)
         {
-            PassengerID = passengerID;
             Name = name;
             Surname = surname;
         }

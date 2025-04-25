@@ -20,7 +20,7 @@ namespace FleetAPI.Models.Tanks
             CurrentLitersNumber = 0;
         }
 
-        public void FillTank(int liters)
+        public void FillTank(double liters)
         {
             if (liters <= 0)
                 throw new InvalidTankFillAmountException("Liters to fill must be greater than zero.");

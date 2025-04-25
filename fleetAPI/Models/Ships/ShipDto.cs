@@ -5,10 +5,10 @@ namespace FleetAPI.Models.Ships
 {
     public class ShipDto
     {
-        public int ImoNumber { get; set; }
+        public string ImoNumber { get; set; }
         public string Name     { get; set; } = null!;
-        public float Length    { get; set; }
-        public float Width     { get; set; }
+        public double Length    { get; set; }
+        public double Width     { get; set; }
         public IEnumerable<Passenger>? Passengers { get; set; }
         public IEnumerable<Tank>?      Tanks      { get; set; }
     }

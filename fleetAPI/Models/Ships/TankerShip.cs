@@ -6,7 +6,7 @@ namespace FleetAPI.Models.Ships
     public class TankerShip : Ship
     {
         public int TanksNumber { get; set; }
-        private List<Tank> Tanks { get; } = new List<Tank>();
+        public List<Tank> Tanks { get; } = new List<Tank>();
 
         public TankerShip(string imo, string name, double length, double width, IEnumerable<Tank> tanks)
             : base(imo, name, length, width, ShipType.Tanker)
@@ -15,7 +15,7 @@ namespace FleetAPI.Models.Ships
             TanksNumber = tanks.Count();
         }
 
-        public void FillTank(Guid tankId, int liters)
+        public void FillTank(Guid tankId, double liters)
         {
             var tank = Tanks.FirstOrDefault(p => p.TankID == tankId)
                     ?? throw new TankDoesntExistException(tankId);

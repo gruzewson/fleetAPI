@@ -15,10 +15,13 @@ namespace FleetAPI.Models.Ships
         {
             Passengers = passengers.Select(p => new Passenger
             (
-                ++CurrentPassengerID,
                 p.Name,
                 p.Surname
             )).ToList();
+            foreach (var passenger in Passengers)
+            {
+                passenger.PassengerID = ++CurrentPassengerID;
+            }
 
             PassengerCount = Passengers.Count;
         }
@@ -32,10 +35,10 @@ namespace FleetAPI.Models.Ships
 
             var passenger = new Passenger
             (
-                CurrentPassengerID + 1,
                 name,
                 surname
             );
+            passenger.PassengerID = ++CurrentPassengerID;
 
             Passengers.Add(passenger);
             PassengerCount++;
@@ -56,7 +59,7 @@ namespace FleetAPI.Models.Ships
             passenger.Surname = newSurname;
         }
         
-        public void RemovePassengerById(int passengerId)
+        public void RemovePassengerById(int passengerId) //TODO valid id
         {
             var passenger = Passengers.FirstOrDefault(p => p.PassengerID == passengerId)
                             ?? throw new PassengerNotFoundException(passengerId);
