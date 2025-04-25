@@ -44,6 +44,7 @@ Lists give us the flexibility to grow and iterate in a predictable order, which 
 
 ## Project Structure
 
+```
 fleetAPI/
 ├── Controllers/       # Web API controllers
 ├── Data/              # Ship Register
@@ -51,6 +52,7 @@ fleetAPI/
 ├── Exceptions/        # Custom exception types
 ├── Models/            # Domain models (Ships, Tanks, Passengers, DTOs)
 └── fleetAPI_tests/    # test project
+```
 
 
 ![Project Structure Diagram](documentation/diagram.png)
