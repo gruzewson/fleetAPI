@@ -4,7 +4,7 @@
 
 FleetAPI is a C# Web API that provides end-to-end management of a mixed fleet of Passenger and Tanker ships. It enforces strict validation of all important data like IMO numbers (see [here](https://en.wikipedia.org/wiki/IMO_number)), physical dimensions and Passenger or Tank data integrity.  
 
-For full requirements for this task see [Requirements](documentation/requirements.pdf).  
+For full requirements for this task see [Requirements](documentation/Requirements.pdf).  
 
 
 
