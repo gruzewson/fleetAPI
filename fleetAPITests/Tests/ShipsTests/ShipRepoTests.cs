@@ -8,7 +8,7 @@ using FleetAPI.Factories;
 using FleetAPI.Models.Tanks;
 using FleetAPI.Models.Passengers;
 
-namespace FleetAPI.Tests
+namespace FleetAPI.Tests.ShipsTests
 {
     public class ShipRepoTests
     {
@@ -148,6 +148,15 @@ namespace FleetAPI.Tests
             }
         }
 
+        [Fact]
+        public void GetShipsByType_ShouldReturnEmptyList_WhenNoShipsOfType()
+        {
+            // Act
+            var ships = _shipRepository.GetShipsByType(ShipType.Tanker);
 
+            // Assert
+            Assert.Empty(ships);
+
+        }
     }
 }

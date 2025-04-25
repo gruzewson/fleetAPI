@@ -6,7 +6,7 @@ using FleetAPI.Factories;
 using FleetAPI.Models.Tanks;
 using FleetAPI.Exceptions;
 
-namespace FleetAPI.Tests
+namespace FleetAPI.Tests.ShipsTests
 {
     public class TankerShipTests
     {
