@@ -2,19 +2,19 @@ using Microsoft.AspNetCore.Mvc;
 using FleetAPI.Models.Ships;
 
 using FleetAPI.Factories;
-using FleetAPI.Repositories;
+using FleetAPI.Data;
 
 
 namespace FleetAPI.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ShipsController : ControllerBase
+public class PassengerShipController : ControllerBase
 {
     private readonly IShipRepository _repo;
     private readonly Func<string, IShipFactory<Ship>> _factory;
 
-    public ShipsController(
+    public PassengerShipController(
         IShipRepository repo,
         Func<string, IShipFactory<Ship>> factory)
     {
