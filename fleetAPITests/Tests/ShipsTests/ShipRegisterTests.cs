@@ -10,18 +10,22 @@ using FleetAPI.Models.Passengers;
 
 namespace FleetAPI.Tests.ShipsTests
 {
-    public class ShipRepoTests
+    public class ShipRegisterTests
     {
-        private readonly ShipRepository _shipRepository;
+        private readonly ShipRegister _shipRegister;
         private readonly PassengerShip _correctPassengerShip;
         private readonly TankerShip _correctTankerShip;
 
-        public ShipRepoTests()
+        private const string WRONG_IMO = "IMO1234567";
+        private const string CORRECT_PASSENGER_IMO = "IMO9224764";
+        private const string CORRECT_TANKER_IMO = "IMO9074729";
+
+        public ShipRegisterTests()
         {
             var tankerFactory = new TankerShipFactory();
             var passengerFactory = new PassengerShipFactory();
             _correctTankerShip = tankerFactory.Create(
-                imo: "IMO9074729",
+                imo: CORRECT_TANKER_IMO,
                 name: "Tanker Ship",
                 length: 300f,
                 width: 50f,
@@ -31,24 +35,24 @@ namespace FleetAPI.Tests.ShipsTests
                 }
             );
             _correctPassengerShip = passengerFactory.Create(
-                imo: "IMO9224764",
+                imo: CORRECT_PASSENGER_IMO,
                 name: "Passenger Ship",
                 length: 300f,
                 width: 50f,
-                passengers: Enumerable.Empty<Passenger>()
+                passengers: []
             );
-            _shipRepository = new ShipRepository();
-            _shipRepository.AddShip(_correctPassengerShip);
+            _shipRegister = new ShipRegister();
+            _shipRegister.AddShip(_correctPassengerShip);
         }
 
         [Fact]
         public void AddShip_ShouldAddShip_WhenValidData()
         {
             // Act
-            _shipRepository.AddShip(_correctTankerShip);
+            _shipRegister.AddShip(_correctTankerShip);
 
             // Assert
-            var ship = _shipRepository.GetShipByImo("IMO9074729");
+            var ship = _shipRegister.GetShipByImo(CORRECT_TANKER_IMO);
             Assert.Equal(_correctTankerShip, ship);
         }
 
@@ -57,8 +61,8 @@ namespace FleetAPI.Tests.ShipsTests
         {
             // Act & Assert
             var ex = Assert.Throws<ShipAlreadyExistsException>(() =>
-                _shipRepository.AddShip(_correctPassengerShip));
-            Assert.Equal("Ship with IMO 'IMO9224764' already exists.", ex.Message);
+                _shipRegister.AddShip(_correctPassengerShip));
+            Assert.Equal($"Ship with IMO '{CORRECT_PASSENGER_IMO}' already exists.", ex.Message);
         }
 
         [Fact]
@@ -66,7 +70,7 @@ namespace FleetAPI.Tests.ShipsTests
         {
             // Act & Assert
             var ex = Assert.Throws<ArgumentNullException>(() =>
-                _shipRepository.AddShip(null));
+                _shipRegister.AddShip(null!));
             Assert.Equal("Value cannot be null. (Parameter 'ship')", ex.Message);
         }
 
@@ -74,11 +78,11 @@ namespace FleetAPI.Tests.ShipsTests
         public void RemoveShip_ShouldRemoveShip_WhenValidImo()
         {
             // Act
-            _shipRepository.RemoveShip("IMO9224764");
+            _shipRegister.RemoveShip(CORRECT_PASSENGER_IMO);
 
             // Assert
             Assert.Throws<ShipNotFoundException>(() =>
-                _shipRepository.GetShipByImo("IMO9224764"));
+                _shipRegister.GetShipByImo(CORRECT_PASSENGER_IMO));
         }
 
         [Fact]
@@ -86,15 +90,15 @@ namespace FleetAPI.Tests.ShipsTests
         {
             // Act & Assert
             var ex = Assert.Throws<ShipNotFoundException>(() =>
-                _shipRepository.RemoveShip("IMO1234567"));
-            Assert.Equal("Ship with IMO 'IMO1234567' not found.", ex.Message);
+                _shipRegister.RemoveShip(WRONG_IMO));
+            Assert.Equal($"Ship with IMO '{WRONG_IMO}' not found.", ex.Message);
         }
 
         [Fact]
         public void GetShipByImo_ShouldReturnShip_WhenValidImo()
         {
             // Act
-            var ship = _shipRepository.GetShipByImo("IMO9224764");
+            var ship = _shipRegister.GetShipByImo(CORRECT_PASSENGER_IMO);
 
             // Assert
             Assert.Equal(_correctPassengerShip, ship);
@@ -105,18 +109,61 @@ namespace FleetAPI.Tests.ShipsTests
         {
             // Act & Assert
             var ex = Assert.Throws<ShipNotFoundException>(() =>
-                _shipRepository.GetShipByImo("IMO1234567"));
-            Assert.Equal("Ship with IMO 'IMO1234567' not found.", ex.Message);
+                _shipRegister.GetShipByImo(WRONG_IMO));
+            Assert.Equal($"Ship with IMO '{WRONG_IMO}' not found.", ex.Message);
         }
+        
+        [Fact]
+        public void GetPassengerShipByImo_ShouldReturnPassengerShip_WhenValidImo()
+        {
+            // Act
+            var ship = _shipRegister.GetPassengerShipByImo(CORRECT_PASSENGER_IMO);
+
+            // Assert
+            Assert.Equal(_correctPassengerShip, ship);
+        }
+
+        [Fact]
+        public void GetPassengerShipByImo_ShouldThrowException_WhenShipNotFound()
+        {
+            // Act & Assert
+            var ex = Assert.Throws<ShipNotFoundException>(() =>
+                _shipRegister.GetPassengerShipByImo(WRONG_IMO));
+            Assert.Equal($"Ship with IMO '{WRONG_IMO}' not found.", ex.Message);
+        }
+
+        [Fact]
+        public void GetTankerShipByImo_ShouldReturnTankerShip_WhenValidImo()
+        {
+            // Arrange
+            _shipRegister.AddShip(_correctTankerShip);
+
+            // Act
+            var ship = _shipRegister.GetTankerShipByImo(CORRECT_TANKER_IMO);
+
+            // Assert
+            Assert.Equal(_correctTankerShip, ship);
+        }
+
+        [Fact]
+        public void GetTankerShipByImo_ShouldThrowException_WhenShipNotFound()
+        {
+            // Act & Assert
+            var ex = Assert.Throws<ShipNotFoundException>(() =>
+                _shipRegister.GetTankerShipByImo(WRONG_IMO));
+            Assert.Equal($"Ship with IMO '{WRONG_IMO}' not found.", ex.Message);
+        }
+        
+        
 
         [Fact]
         public void GetAllShips_ShouldReturnAllShips()
         {
             // Arrange
-            _shipRepository.AddShip(_correctTankerShip);
+            _shipRegister.AddShip(_correctTankerShip);
 
             // Act
-            var ships = _shipRepository.GetAllShips();
+            var ships = _shipRegister.GetAllShips();
 
             // Assert
             Assert.Contains(_correctPassengerShip, ships);
@@ -130,10 +177,10 @@ namespace FleetAPI.Tests.ShipsTests
         public void GetShipsByType_ShouldReturnShipsOfType(ShipType type)
         {
             // Arrange
-            _shipRepository.AddShip(_correctTankerShip);
+            _shipRegister.AddShip(_correctTankerShip);
 
             // Act
-            var ships = _shipRepository.GetShipsByType(type);
+            var ships = _shipRegister.GetShipsByType(type);
 
             // Assert
             if (type == ShipType.Tanker)
@@ -152,7 +199,7 @@ namespace FleetAPI.Tests.ShipsTests
         public void GetShipsByType_ShouldReturnEmptyList_WhenNoShipsOfType()
         {
             // Act
-            var ships = _shipRepository.GetShipsByType(ShipType.Tanker);
+            var ships = _shipRegister.GetShipsByType(ShipType.Tanker);
 
             // Assert
             Assert.Empty(ships);

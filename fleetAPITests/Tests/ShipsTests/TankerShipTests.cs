@@ -36,7 +36,7 @@ namespace FleetAPI.Tests.ShipsTests
             // Arrange
             var tank = _correctShip.Tanks.First();
             var initialLiters = tank.CurrentLitersNumber; //10
-            var litersToFill = 50;
+            const int litersToFill = 50;
 
             // Act
             _correctShip.FillTank(tank.TankId, litersToFill);
@@ -50,7 +50,7 @@ namespace FleetAPI.Tests.ShipsTests
         {
             // Arrange
             var invalidTankId = Guid.NewGuid();
-            var litersToFill = 50;
+            const int litersToFill = 50;
 
             // Act & Assert
             Assert.Throws<TankDoesntExistException>(() => _correctShip.FillTank(invalidTankId, litersToFill));
@@ -64,7 +64,7 @@ namespace FleetAPI.Tests.ShipsTests
         {
             // Arrange
             var tank  = _correctShip.Tanks.First();
-            var action = () => _correctShip.FillTank(tank.TankID, litersToFill);
+            var action = () => _correctShip.FillTank(tank.TankId, litersToFill);
 
             // Act & Assert
             Assert.Throws(expectedException, action);
@@ -75,10 +75,9 @@ namespace FleetAPI.Tests.ShipsTests
         {
             // Arrange
             var tank = _correctShip.Tanks.First();
-            var initialLiters = tank.CurrentLitersNumber; //10
 
             // Act
-            _correctShip.EmptyTank(tank.TankID);
+            _correctShip.EmptyTank(tank.TankId);
 
             // Assert
             Assert.Equal(0, tank.CurrentLitersNumber);
@@ -101,10 +100,44 @@ namespace FleetAPI.Tests.ShipsTests
             var tank = _correctShip.Tanks.First();
 
             // Act
-            _correctShip.EmptyTank(tank.TankID);
+            _correctShip.EmptyTank(tank.TankId);
 
             // Assert
-            Assert.Throws<TankAlreadyEmptyException>(() => _correctShip.EmptyTank(tank.TankID));
+            Assert.Throws<TankAlreadyEmptyException>(() => _correctShip.EmptyTank(tank.TankId));
+        }
+        
+        [Fact]
+        public void GetTank_ShouldReturnTank_WhenValidTankId()
+        {
+            // Arrange
+            var tank = _correctShip.Tanks.First();
+
+            // Act
+            var result = _correctShip.GetTank(tank.TankId);
+
+            // Assert
+            Assert.Equal(tank, result);
+        }
+        
+        [Fact]
+        public void GetTank_ShouldThrowException_WhenTankNotFound()
+        {
+            // Arrange
+            var invalidTankId = Guid.NewGuid();
+
+            // Act & Assert
+            Assert.Throws<TankDoesntExistException>(() => _correctShip.GetTank(invalidTankId));
+        }
+        
+        [Fact]
+        public void GetAllTanks_ShouldReturnAllTanks()
+        {
+            // Act
+            var tanks = _correctShip.GetAllTanks();
+
+            // Assert
+            Assert.Equal(_correctShip.Tanks.Count, tanks.Count());
+            Assert.Equal(_correctShip.Tanks, tanks);
         }
     }
 }

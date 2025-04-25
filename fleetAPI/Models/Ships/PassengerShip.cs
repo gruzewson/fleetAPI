@@ -5,8 +5,8 @@ namespace FleetAPI.Models.Ships
 {
     public class PassengerShip : Ship
     {
-        private int PassengerCount { get; set; }
-        private List<Passenger> Passengers { get; set; }
+        public int PassengerCount { get; set; }
+        public List<Passenger> Passengers { get; set; }
 
         public PassengerShip(string imo, string name, double length,
             double width, IEnumerable<Passenger> passengers)

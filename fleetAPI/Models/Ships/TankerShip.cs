@@ -6,7 +6,7 @@ namespace FleetAPI.Models.Ships
     public class TankerShip : Ship
     {
         public int TanksNumber { get; set; }
-        private List<Tank> Tanks { get; }
+        public List<Tank> Tanks { get; }
 
         public TankerShip(string imo, string name, double length, double width, IEnumerable<Tank> tanks)
             : base(imo, name, length, width, ShipType.Tanker)

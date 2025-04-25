@@ -4,8 +4,8 @@ namespace FleetAPI.Models.Tanks
 {
     public class Tank
     {
-        private double Capacity { get; set; }
-        private double CurrentLitersNumber { get; set; }
+        public double Capacity { get; set; }
+        public double CurrentLitersNumber { get; set; }
         public FuelType FuelType { get; set; }
         public Guid TankId { get; set; }
         

@@ -31,38 +31,32 @@ namespace FleetAPI.Controllers
         public IActionResult Create([FromBody] ShipDto dto)
         {
             if (_register.Exists(dto.ImoNumber))
-                return Conflict($"Ship {dto.ImoNumber} already exists.");
-
-            Ship newShip = dto.ShipType switch
             {
-                ShipType.Passenger => _passengerShipFactory.Create(
-                    dto.ImoNumber,
-                    dto.Name,
-                    dto.Length,
-                    dto.Width,
-                    dto.Passengers ?? new List<Passenger>(),
-                    null
-                ),
+                return Conflict($"Ship with IMO {dto.ImoNumber} already exists.");
+            }
 
-                ShipType.Tanker    => _tankerShipFactory.Create(
-                    dto.ImoNumber,
-                    dto.Name,
-                    dto.Length,
-                    dto.Width,
-                    null,
-                    dto.Tanks
-                ),
+            try
+            {
+                Ship ship;
+                switch (dto.ShipType)
+                {
+                    case ShipType.Passenger:
+                        ship = _passengerShipFactory.Create(dto.ImoNumber, dto.Name, dto.Length, dto.Width, dto.Passengers, dto.Tanks);
+                        break;
+                    case ShipType.Tanker:
+                        ship = _tankerShipFactory.Create(dto.ImoNumber, dto.Name, dto.Length, dto.Width, dto.Passengers, dto.Tanks);
+                        break;
+                    default:
+                        return BadRequest($"Unsupported ship type: {dto.ShipType}");
+                }
 
-                _ => throw new ArgumentException($"Unsupported ship type: {dto.ShipType}")
-            };
-
-            _register.AddShip(newShip);
-
-            return CreatedAtAction(
-                nameof(Create),
-                new { id = newShip.ImoNumber },
-                newShip
-            );
+                _register.AddShip(ship);
+                return CreatedAtAction(nameof(GetShipByImo), new { imo = ship.ImoNumber }, ship);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("getShips")]

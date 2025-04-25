@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
 using Xunit;
 using FleetAPI.Models.Ships;
 using FleetAPI.Factories;
@@ -20,7 +18,7 @@ namespace FleetAPI.Tests.ShipsTests
                 name: "Test Ship",
                 length: 300f,
                 width: 50f,
-                passengers: Enumerable.Empty<Passenger>()
+                passengers: []
             );
         }
 
@@ -35,14 +33,14 @@ namespace FleetAPI.Tests.ShipsTests
             Assert.Equal("Andrew", passenger.Name);
             Assert.Equal("Wandrew", passenger.Surname);
             Assert.Equal(1, _correctShip.PassengerCount);
-            Assert.Equal(1, passenger.PassengerID);
         }
 
         [Theory]
         [InlineData("", "", "Name is required.")]
         [InlineData("Andrew", "", "Surname is required.")]
         [InlineData("", "Wandrew", "Name is required.")]
-        public void AddPassenger_ShouldThrowException_WhenInvalidData(string name, string surname, string expectedMessage)
+        public void AddPassenger_ShouldThrowException_WhenInvalidData(string name, string surname,
+            string expectedMessage)
         {
             // Act & Assert
             var ex = Assert.Throws<InvalidPassengerDataException>(() =>
@@ -58,7 +56,7 @@ namespace FleetAPI.Tests.ShipsTests
             var passenger = _correctShip.Passengers.First();
 
             // Act
-            _correctShip.UpdatePassengerInfo(passenger.PassengerID, "NewName", "NewSurname");
+            _correctShip.UpdatePassengerInfo(passenger.PassengerId, "NewName", "NewSurname");
 
             // Assert
             Assert.Equal("NewName", passenger.Name);
@@ -69,7 +67,8 @@ namespace FleetAPI.Tests.ShipsTests
         [InlineData("", "", "Name is required.")]
         [InlineData("Andrew", "", "Surname is required.")]
         [InlineData("", "Wandrew", "Name is required.")]
-        public void UpdatePassengerInfo_ShouldThrowException_WhenInvalidData(string newName, string newSurname, string expectedMessage)
+        public void UpdatePassengerInfo_ShouldThrowException_WhenInvalidData(string newName, string newSurname,
+            string expectedMessage)
         {
             // Arrange
             _correctShip.AddPassenger("Andrew", "Wandrew");
@@ -77,16 +76,17 @@ namespace FleetAPI.Tests.ShipsTests
 
             // Act & Assert
             var ex = Assert.Throws<InvalidPassengerDataException>(() =>
-                _correctShip.UpdatePassengerInfo(passenger.PassengerID, newName, newSurname));
+                _correctShip.UpdatePassengerInfo(passenger.PassengerId, newName, newSurname));
             Assert.Equal(expectedMessage, ex.Message);
         }
 
         [Fact]
         public void UpdatePassengerInfo_ShouldThrowException_WhenPassengerNotFound()
         {
+            var guid = Guid.NewGuid();
             var ex = Assert.Throws<PassengerNotFoundException>(() =>
-                _correctShip.UpdatePassengerInfo(999, "NewName", "NewSurname"));
-            Assert.Equal("Passenger with ID 999 not found.", ex.Message);
+                _correctShip.UpdatePassengerInfo(guid, "NewName", "NewSurname"));
+            Assert.Equal($"Passenger with ID {guid} not found.", ex.Message);
         }
 
         [Fact]
@@ -97,7 +97,7 @@ namespace FleetAPI.Tests.ShipsTests
             var passenger = _correctShip.Passengers.First();
 
             // Act
-            _correctShip.RemovePassengerById(passenger.PassengerID);
+            _correctShip.RemovePassengerById(passenger.PassengerId);
 
             // Assert
             Assert.Empty(_correctShip.Passengers);
@@ -107,9 +107,10 @@ namespace FleetAPI.Tests.ShipsTests
         [Fact]
         public void RemovePassengerById_ShouldThrowException_WhenPassengerNotFound()
         {
+            var guid = Guid.NewGuid();
             var ex = Assert.Throws<PassengerNotFoundException>(() =>
-                _correctShip.RemovePassengerById(999));
-            Assert.Equal("Passenger with ID 999 not found.", ex.Message);
+                _correctShip.RemovePassengerById(guid));
+            Assert.Equal($"Passenger with ID {guid} not found.", ex.Message);
         }
 
         [Fact]
@@ -120,7 +121,7 @@ namespace FleetAPI.Tests.ShipsTests
             var passenger = _correctShip.Passengers.First();
 
             // Act
-            var result = _correctShip.GetPassengerById(passenger.PassengerID);
+            var result = _correctShip.GetPassengerById(passenger.PassengerId);
 
             // Assert
             Assert.Equal(passenger, result);
@@ -129,9 +130,26 @@ namespace FleetAPI.Tests.ShipsTests
         [Fact]
         public void GetPassengerById_ShouldThrowException_WhenPassengerNotFound()
         {
+            var guid = Guid.NewGuid();
             var ex = Assert.Throws<PassengerNotFoundException>(() =>
-                _correctShip.GetPassengerById(999));
-            Assert.Equal("Passenger with ID 999 not found.", ex.Message);
+                _correctShip.GetPassengerById(guid));
+            Assert.Equal($"Passenger with ID {guid} not found.", ex.Message);
+        }
+
+        [Fact]
+        public void GetAllPassengers_ShouldReturnAllPassengers()
+        {
+            // Arrange
+            _correctShip.AddPassenger("Andrew", "Wandrew");
+            _correctShip.AddPassenger("John", "Doe");
+
+            // Act
+            var passengers = _correctShip.GetAllPassengers();
+
+            // Assert
+            Assert.Equal(2, passengers.Count());
+            Assert.Contains(passengers, p => p.Name == "Andrew" && p.Surname == "Wandrew");
+            Assert.Contains(passengers, p => p.Name == "John" && p.Surname == "Doe");
         }
     }
 }

@@ -34,15 +34,17 @@ namespace FleetAPI.Data
                    ?? throw new ShipNotFoundException(imo);
         }
 
-        public PassengerShip? GetPassengerShipByImo(string imo)
+        public PassengerShip GetPassengerShipByImo(string imo)
             => _ships
-                .OfType<PassengerShip>()                   
-                .FirstOrDefault(s => s.ImoNumber == imo);  
+            .OfType<PassengerShip>()
+            .FirstOrDefault(s => s.ImoNumber == imo)
+            ?? throw new ShipNotFoundException(imo);
 
-        public TankerShip? GetTankerShipByImo(string imo)
+        public TankerShip GetTankerShipByImo(string imo)
             => _ships
-                .OfType<TankerShip>()                     
-                .FirstOrDefault(s => s.ImoNumber == imo);
+            .OfType<TankerShip>()
+            .FirstOrDefault(s => s.ImoNumber == imo)
+            ?? throw new ShipNotFoundException(imo);
 
         public bool Exists(string imo) => _ships.Any(s => s.ImoNumber == imo);
 

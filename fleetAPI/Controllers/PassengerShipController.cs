@@ -46,8 +46,14 @@ namespace FleetAPI.Controllers
             {
                 return NotFound();
             }
-
-            ship.RemovePassengerById(passengerId);
+            try
+            {
+                ship.RemovePassengerById(passengerId);
+            }
+            catch (PassengerNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
 
             return NoContent();
         }

@@ -13,28 +13,25 @@ namespace FleetAPI.Tests.Controllers
 {
     public class PassengerShipControllerTests
     {
-        private readonly Mock<IShipRepository>              _repoMock;
-        private readonly Mock<IShipFactory<PassengerShip>> _factoryMock;
+        private readonly Mock<IShipRegister>              _regMock;
         private readonly PassengerShipController            _ctrl;
+        private const string TestImo = "IMO9074729";
 
         public PassengerShipControllerTests()
         {
-            _repoMock    = new Mock<IShipRepository>();
-            _factoryMock = new Mock<IShipFactory<PassengerShip>>();
+            _regMock    = new Mock<IShipRegister>();
             _ctrl = new PassengerShipController(
-                _repoMock.Object,
-                _factoryMock.Object
+                _regMock.Object
             );
         }
 
         [Fact]
         public void AddPassenger_ShouldAdd_WhenValid()
         {
-            string imo = "IMO9074729";
-            var ship = new PassengerShip(imo, "Test Ship", 100.0, 50.0, new List<Passenger>());
-            _repoMock.Setup(r => r.GetPassengerShipByImo(imo)).Returns(ship);
+            var ship = new PassengerShip(TestImo, "Test Ship", 100.0, 50.0, new List<Passenger>());
+            _regMock.Setup(r => r.GetPassengerShipByImo(TestImo)).Returns(ship);
 
-            var result = _ctrl.AddPassenger(imo, new PassengerDto("John", "Kowal"));
+            var result = _ctrl.AddPassenger(TestImo, new PassengerDto("John", "Kowal"));
 
             Assert.IsType<NoContentResult>(result);
             Assert.Single(ship.Passengers);
@@ -45,10 +42,9 @@ namespace FleetAPI.Tests.Controllers
         [Fact]
         public void AddPassenger_ShouldReturnNotFound_WhenShipDoesNotExist()
         {
-            string imo = "IMO9074729";
-            _repoMock.Setup(r => r.GetPassengerShipByImo(imo)).Returns((PassengerShip)null);
+            _regMock.Setup(r => r.GetPassengerShipByImo(TestImo)).Returns((PassengerShip)null!);
 
-            var result = _ctrl.AddPassenger(imo, new PassengerDto("John", "Kowal"));
+            var result = _ctrl.AddPassenger(TestImo, new PassengerDto("John", "Kowal"));
 
             Assert.IsType<NotFoundResult>(result);
         }
@@ -58,11 +54,10 @@ namespace FleetAPI.Tests.Controllers
         [InlineData("John", "", "Surname is required.")]
         public void AddPassenger_ShouldReturnBadRequest_WhenInvalidData(string name, string surname, string expectedError)
         {
-            string imo = "IMO9074729";
-            var ship = new PassengerShip(imo, "Test Ship", 100.0, 50.0, Enumerable.Empty<Passenger>());
-            _repoMock.Setup(r => r.GetPassengerShipByImo(imo)).Returns(ship);
+            var ship = new PassengerShip(TestImo, "Test Ship", 100.0, 50.0, []);
+            _regMock.Setup(r => r.GetPassengerShipByImo(TestImo)).Returns(ship);
 
-            var result = _ctrl.AddPassenger(imo, new PassengerDto(name, surname));
+            var result = _ctrl.AddPassenger(TestImo, new PassengerDto(name, surname));
 
             Assert.IsType<BadRequestObjectResult>(result);
             var badRequestResult = (BadRequestObjectResult)result;
@@ -72,14 +67,13 @@ namespace FleetAPI.Tests.Controllers
         [Fact]
         public void RemovePassenger_ShouldRemove_WhenValid()
         {
-            string imo = "IMO9074729";
-            var ship = new PassengerShip(imo, "Test Ship", 100.0, 50.0, new List<Passenger>
+            var ship = new PassengerShip(TestImo, "Test Ship", 100.0, 50.0, new List<Passenger>
             {
                 new Passenger("John", "Kowal")
             });
-            _repoMock.Setup(r => r.GetPassengerShipByImo(imo)).Returns(ship);
+            _regMock.Setup(r => r.GetPassengerShipByImo(TestImo)).Returns(ship);
 
-            var result = _ctrl.RemovePassenger(imo, 1);
+            var result = _ctrl.RemovePassenger(TestImo, ship.Passengers[0].PassengerId);
 
             Assert.IsType<NoContentResult>(result);
             Assert.Empty(ship.Passengers);
@@ -88,28 +82,36 @@ namespace FleetAPI.Tests.Controllers
         [Fact]
         public void RemovePassenger_ShouldReturnNotFound_WhenShipDoesNotExist()
         {
-            string imo = "IMO9074729";
-            _repoMock.Setup(r => r.GetPassengerShipByImo(imo)).Returns((PassengerShip)null);
+            _regMock.Setup(r => r.GetPassengerShipByImo(TestImo)).Returns((PassengerShip)null!);
 
-            var result = _ctrl.RemovePassenger(imo, 1);
+            var result = _ctrl.RemovePassenger(TestImo, Guid.NewGuid());
 
             Assert.IsType<NotFoundResult>(result);
         }
+        
+        [Fact]
+        public void RemovePassenger_ShouldReturnNotFound_WhenPassengerDoesNotExist()
+        {
+            var ship = new PassengerShip(TestImo, "Test Ship", 100.0, 50.0, new List<Passenger>());
+            _regMock.Setup(r => r.GetPassengerShipByImo(TestImo)).Returns(ship);
+            var guid = Guid.NewGuid();
+            var result = _ctrl.RemovePassenger(TestImo, guid);
 
-        // TODO invalid ID
+            Assert.IsType<NotFoundObjectResult>(result);
+            Assert.Equal($"Passenger with ID {guid} not found.", ((NotFoundObjectResult)result).Value);
+        }
 
         [Fact]
         public void UpdatePassengerInfo_ShouldUpdate_WhenValid()
         {
-            string imo = "IMO9074729";
-            var ship = new PassengerShip(imo, "Test Ship", 100.0, 50.0, new List<Passenger>
+            var ship = new PassengerShip(TestImo, "Test Ship", 100.0, 50.0, new List<Passenger>
             {
                 new Passenger("John", "Kowal")
             });
-            _repoMock.Setup(r => r.GetPassengerShipByImo(imo)).Returns(ship);
+            _regMock.Setup(r => r.GetPassengerShipByImo(TestImo)).Returns(ship);
 
             var passengerDto = new PassengerDto("Janek", "Smith");
-            var result = _ctrl.UpdatePassengerInfo(imo, 1, passengerDto);
+            var result = _ctrl.UpdatePassengerInfo(TestImo, ship.Passengers[0].PassengerId, passengerDto);
 
             Assert.IsType<NoContentResult>(result);
             Assert.Single(ship.Passengers);
@@ -120,11 +122,10 @@ namespace FleetAPI.Tests.Controllers
         [Fact]
         public void UpdatePassengerInfo_ShouldReturnNotFound_WhenShipDoesNotExist()
         {
-            string imo = "IMO9074729";
-            _repoMock.Setup(r => r.GetPassengerShipByImo(imo)).Returns((PassengerShip)null);
+            _regMock.Setup(r => r.GetPassengerShipByImo(TestImo)).Returns((PassengerShip)null!);
 
             var passengerDto = new PassengerDto("Janek", "Smith");
-            var result = _ctrl.UpdatePassengerInfo(imo, 1, passengerDto);
+            var result = _ctrl.UpdatePassengerInfo(TestImo, Guid.NewGuid(), passengerDto);
 
             Assert.IsType<NotFoundResult>(result);
         }
@@ -134,15 +135,14 @@ namespace FleetAPI.Tests.Controllers
         [InlineData("John", "", "Surname is required.")]
         public void UpdatePassengerInfo_ShouldReturnBadRequest_WhenInvalidData(string name, string surname, string expectedError)
         {
-            string imo = "IMO9074729";
-            var ship = new PassengerShip(imo, "Test Ship", 100.0, 50.0, new List<Passenger>
+            var ship = new PassengerShip(TestImo, "Test Ship", 100.0, 50.0, new List<Passenger>
             {
                 new Passenger("John", "Kowal")
             });
-            _repoMock.Setup(r => r.GetPassengerShipByImo(imo)).Returns(ship);
+            _regMock.Setup(r => r.GetPassengerShipByImo(TestImo)).Returns(ship);
 
             var passengerDto = new PassengerDto(name, surname);
-            var result = _ctrl.UpdatePassengerInfo(imo, 1, passengerDto);
+            var result = _ctrl.UpdatePassengerInfo(TestImo, ship.Passengers[0].PassengerId, passengerDto);
 
             Assert.IsType<BadRequestObjectResult>(result);
             var badRequestResult = (BadRequestObjectResult)result;
@@ -152,28 +152,27 @@ namespace FleetAPI.Tests.Controllers
         [Fact]
         public void UpdatePassengerInfo_ShouldReturnNotFound_WhenPassengerDoesNotExist()
         {
-            string imo = "IMO9074729";
-            var ship = new PassengerShip(imo, "Test Ship", 100.0, 50.0, new List<Passenger>());
-            _repoMock.Setup(r => r.GetPassengerShipByImo(imo)).Returns(ship);
+            var ship = new PassengerShip(TestImo, "Test Ship", 100.0, 50.0, new List<Passenger>());
+            _regMock.Setup(r => r.GetPassengerShipByImo(TestImo)).Returns(ship);
 
+            var guid = Guid.NewGuid();
             var passengerDto = new PassengerDto("Janek", "Smith");
-            var result = _ctrl.UpdatePassengerInfo(imo, 1, passengerDto);
+            var result = _ctrl.UpdatePassengerInfo(TestImo, guid, passengerDto);
 
             var notFound = Assert.IsType<NotFoundObjectResult>(result);
-            Assert.Equal("Passenger with ID 1 not found.", notFound.Value);
+            Assert.Equal($"Passenger with ID {guid} not found.", notFound.Value);
         }
 
         [Fact]
         public void GetPassengerById_ShouldReturnPassenger_WhenValid()
-        {
-            string imo = "IMO9074729";
-            var ship = new PassengerShip(imo, "Test Ship", 100.0, 50.0, new List<Passenger>
+        { ;
+            var ship = new PassengerShip(TestImo, "Test Ship", 100.0, 50.0, new List<Passenger>
             {
                 new Passenger("John", "Kowal")
             });
-            _repoMock.Setup(r => r.GetPassengerShipByImo(imo)).Returns(ship);
+            _regMock.Setup(r => r.GetPassengerShipByImo(TestImo)).Returns(ship);
 
-            var result = _ctrl.GetPassengerById(imo, 1);
+            var result = _ctrl.GetPassengerById(TestImo, ship.Passengers[0].PassengerId);
 
             var okResult = Assert.IsType<OkObjectResult>(result);
             var passenger = Assert.IsType<Passenger>(okResult.Value);
@@ -184,10 +183,9 @@ namespace FleetAPI.Tests.Controllers
         [Fact]
         public void GetPassengerById_ShouldReturnNotFound_WhenShipDoesNotExist()
         {
-            string imo = "IMO9074729";
-            _repoMock.Setup(r => r.GetPassengerShipByImo(imo)).Returns((PassengerShip)null);
+            _regMock.Setup(r => r.GetPassengerShipByImo(TestImo)).Returns((PassengerShip)null!);
 
-            var result = _ctrl.GetPassengerById(imo, 1);
+            var result = _ctrl.GetPassengerById(TestImo, Guid.NewGuid());
 
             Assert.IsType<NotFoundResult>(result);
         }
@@ -195,14 +193,40 @@ namespace FleetAPI.Tests.Controllers
         [Fact]
         public void GetPassengerById_ShouldReturnNotFound_WhenPassengerDoesNotExist()
         {
-            string imo = "IMO9074729";
-            var ship = new PassengerShip(imo, "Test Ship", 100.0, 50.0, new List<Passenger>());
-            _repoMock.Setup(r => r.GetPassengerShipByImo(imo)).Returns(ship);
-
-            var result = _ctrl.GetPassengerById(imo, 1);
+            var ship = new PassengerShip(TestImo, "Test Ship", 100.0, 50.0, new List<Passenger>());
+            _regMock.Setup(r => r.GetPassengerShipByImo(TestImo)).Returns(ship);
+            var guid = Guid.NewGuid();
+            var result = _ctrl.GetPassengerById(TestImo, guid);
 
             Assert.IsType<NotFoundObjectResult>(result);
-            Assert.Equal("Passenger with ID 1 not found.", ((NotFoundObjectResult)result).Value);
+            Assert.Equal($"Passenger with ID {guid} not found.", ((NotFoundObjectResult)result).Value);
+        }
+        
+        [Fact]
+        public void GetAllPassengers_ShouldReturnAllPassengers_WhenValid()
+        {
+            var ship = new PassengerShip(TestImo, "Test Ship", 100.0, 50.0, new List<Passenger>
+            {
+                new Passenger("John", "Kowal"),
+                new Passenger("Jane", "Doe")
+            });
+            _regMock.Setup(r => r.GetPassengerShipByImo(TestImo)).Returns(ship);
+
+            var result = _ctrl.GetAllPassengers(TestImo);
+
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var passengers = Assert.IsType<List<Passenger>>(okResult.Value);
+            Assert.Equal(2, passengers.Count);
+        }
+        
+        [Fact]
+        public void GetAllPassengers_ShouldReturnNotFound_WhenShipDoesNotExist()
+        {
+            _regMock.Setup(r => r.GetPassengerShipByImo(TestImo)).Returns((PassengerShip)null!);
+
+            var result = _ctrl.GetAllPassengers(TestImo);
+
+            Assert.IsType<NotFoundResult>(result);
         }
     }
 }
